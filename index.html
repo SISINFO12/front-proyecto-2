@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Autos</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input, button {
+            padding: 8px;
+            margin: 5px;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        th {
+            background: #333;
+            color: white;
+        }
+
+        button.eliminar {
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🚗 Registro de Autos</h1>
+
+<input id="nombre" placeholder="Nombre del auto">
+<input id="precio" type="number" placeholder="Precio">
+<button onclick="agregar()">Agregar</button>
+
+<h2>Lista de Autos</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Petas</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+</table>
+
+<script>
+
+// AGREGAR AUTO
+function agregar() {
+    const nombre = document.getElementById("nombre").value;
+    const precio = document.getElementById("precio").value;
+
+    if (!nombre || !precio) {
+        alert("Completa los campos");
+        return;
+    }
+
+    fetch("http://localhost:3000/autos", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ nombre, precio })
+    })
+    .then(() => {
+        document.getElementById("nombre").value = "";
+        document.getElementById("precio").value = "";
+        cargar();
+    });
+}
+
+function cargar() {
+    fetch("http://localhost:3000/autos")
+    .then(res => res.json())
+    .then(data => {
+        const tabla = document.getElementById("tabla");
+        tabla.innerHTML = "";
+
+        data.forEach(c => {
+            tabla.innerHTML += `
+                <tr>
+                    <td>${c.Autos}</td>
+                    <td>${c.Precio}</td>
+                    <td>${c.EquivalenciaPeta}</td>
+                    <td>
+                        <button class="eliminar" onclick="eliminar(${c.idAutos})">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    });
+}
+
+function eliminar(id) {
+    if (!confirm("¿Seguro que quieres eliminar este auto?")) return;
+
+    fetch("http://localhost:3000/autos/" + id, {
+        method: "DELETE"
+    })
+    .then(() => cargar());
+}
+
+cargar();
+
+</script>
+
+</body>
+</html>
